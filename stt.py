@@ -13,7 +13,7 @@ The word space will be replaced by Tab when t->s mode
 from arghandle import (
     ArgHandle,
     IndexOutOfRange,
-)  # This is a pip-install library, install via: pip install arghandle==1.2.0
+)  # This is a pip-install library, install via: pip install arghandle==1.3.5
 from pathlib import Path
 import re
 
@@ -109,7 +109,7 @@ cli.HandleHelp()
 if cli.IsArgInActualArgs("-v") or cli.IsArgInActualArgs("--version"):
     raise SystemExit(Version)
 else:
-    file = cli.SetVariableToIndex(2)
+    file = cli.SetVariableToIndex("File", 2)
 
     if isinstance(file, IndexOutOfRange):
         raise SystemExit("No file given! Use -h or --help to get usage!")

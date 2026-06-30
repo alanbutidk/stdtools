@@ -1,7 +1,6 @@
 import shutil
 from pathlib import Path
-import sys
-from arghandle import ArgHandle
+from arghandle import ArgHandle, ArgNotFound, IndexOutOfRange
 
 # PCC Version Info
 Version = """
@@ -42,12 +41,18 @@ if HasVersionArg:
     raise SystemExit  # because our job is done.
 
 if HasPathArg:
-    PathIndex = (Cli.WhereArg("--path") or Cli.WhereArg("-p")) + 1
-    PathLoc = ArgHandle.SetVariableToIndex(PathIndex)
+    PathIndex = Cli.WhereArg("--path")
+    if isinstance(PathIndex, ArgNotFound):
+        PathIndex = Cli.WhereArg("-p")
+    if isinstance(PathIndex, ArgNotFound):
+        raise SystemExit("Could not locate --path/-p in arguments.")
+    ActualPathIndex = PathIndex + 2
+    PathLoc = Cli.SetVariableToIndex("PathLoc", ActualPathIndex)
+    if isinstance(PathLoc, IndexOutOfRange):
+        raise SystemExit("No value provided after --path/-p")
     TargetDir = Path(PathLoc)
 else:
     TargetDir = Path(".")
-
 PycachePath: Path = TargetDir / PCCAlwaysName
 
 if TargetDir.exists() and PycachePath.is_dir():
@@ -58,4 +63,3 @@ if TargetDir.exists() and PycachePath.is_dir():
         print(f"Error removing {PycachePath}: {e}")
 else:
     print(f"No {PCCAlwaysName} directory found in: {TargetDir.resolve()}")
-
