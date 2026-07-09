@@ -7,4 +7,7 @@ Tools like StubExec, To Stub Executables.
 
 And tools like token generators or directory cleaners.
 
+And clones written in C like lst, which colorfully lists the contents in a directory. 
+
 > Building StubExec requires a C Compiler (recommend: GCC) to work.
+

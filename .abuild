@@ -1,0 +1,7 @@
+# autobuild file for managing git
+let TOOL = git
+recipe gits
+gits:
+  (TOOL) add .
+  (TOOL) commit -m "FIX_AND_ADDITION Added some fixes and additions for files or added files."
+  (TOOL) push origin main
