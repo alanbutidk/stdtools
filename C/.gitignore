@@ -1,3 +1,5 @@
 .clangd
 *.exe
+*.dll.a
+*.so
 

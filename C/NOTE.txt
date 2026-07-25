@@ -1,0 +1,7 @@
+To build exec.c you will need:
+
+libluajit-5.1.dll.a (or .a only), python313.dll (or python313.so)
+Now, rename the libluajit-5.1.dll.a to libluajit5.1.dll.a (or .a only)
+
+And execute build.py with ebuild/all
+
