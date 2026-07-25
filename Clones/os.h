@@ -1,11 +1,24 @@
+#ifndef OS_H
+#define OS_H
+#define _GNU_SOURCE
 #include "basic.h"
 
 #if OS_IS == WINDOWS
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #include <io.h>
 #include <tlhelp32.h>
+
+// Check if INCLUDE_SYSHEADERS is there and include the following headers:
+#ifdef INCLUDE_SYSHEADERS
+#include <signal.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/unistd.h>
+#include <unistd.h>
+#endif
 
 // SYS_XXXXX type macro functions.
 #define SYS_OPEN(path) CreateFileA(...)
@@ -35,8 +48,12 @@
 #else
 return 1;
 #endif
+
 // All basic headers.
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+#endif

@@ -10,8 +10,8 @@
 #include <fcntl.h>
 #include <io.h>
 #include <tchar.h>
-#include <windows.h>
 #include <tlhelp32.h>
+#include <windows.h>
 
 #define OS_IS WINDOWS_OS
 
@@ -72,7 +72,8 @@ static void OutBufInit(OutBuf *Ob) {
 
 static void OutBufAppend(OutBuf *Ob, const OutChar *S, size_t N) {
   if (Ob->Len + N > Ob->Cap) {
-    while (Ob->Len + N > Ob->Cap) Ob->Cap *= 2;
+    while (Ob->Len + N > Ob->Cap)
+      Ob->Cap *= 2;
     Ob->Buf = realloc(Ob->Buf, Ob->Cap * sizeof(OutChar));
   }
   memcpy(Ob->Buf + Ob->Len, S, N * sizeof(OutChar));
@@ -80,8 +81,8 @@ static void OutBufAppend(OutBuf *Ob, const OutChar *S, size_t N) {
 }
 
 static void OutBufFlushToNarrowStdout(OutBuf *Ob) {
-  /* Narrow-mode stdout: used on Linux, and on Windows only for --help/--version,
-     which never touch this buffer. Kept for API symmetry. */
+  /* Narrow-mode stdout: used on Linux, and on Windows only for
+     --help/--version, which never touch this buffer. Kept for API symmetry. */
   fwrite(Ob->Buf, sizeof(OutChar), Ob->Len, stdout);
   free(Ob->Buf);
   Ob->Buf = NULL;
@@ -197,12 +198,14 @@ int FindUnixContents(const char *DirName, LstOptions *Opts) {
     int N;
     if (Entries[i].IsDir) {
       FolderCount++;
-      N = UseColor ? snprintf(Line, sizeof(Line), "\033[33m%s\n\033[0m", Entries[i].Name)
-                    : snprintf(Line, sizeof(Line), "%s\n", Entries[i].Name);
+      N = UseColor ? snprintf(Line, sizeof(Line), "\033[33m%s\n\033[0m",
+                              Entries[i].Name)
+                   : snprintf(Line, sizeof(Line), "%s\n", Entries[i].Name);
     } else {
       FileCount++;
-      N = UseColor ? snprintf(Line, sizeof(Line), "\033[36m%s\n\033[0m", Entries[i].Name)
-                    : snprintf(Line, sizeof(Line), "%s\n", Entries[i].Name);
+      N = UseColor ? snprintf(Line, sizeof(Line), "\033[36m%s\n\033[0m",
+                              Entries[i].Name)
+                   : snprintf(Line, sizeof(Line), "%s\n", Entries[i].Name);
     }
     OutBufAppend(&Ob, Line, (size_t)N);
   }
@@ -231,9 +234,10 @@ int FindUnixContents(const char *DirName, LstOptions *Opts) {
   }
 
   char Summary[512];
-  int SLen = snprintf(Summary, sizeof(Summary),
-                       "\n%llu of files.\n%llu of folders.\n%.2f %s Used.\n%.2f %s Free.\n",
-                       FileCount, FolderCount, UsedVal, Units[UIdx], FreeVal, Units[FIdx]);
+  int SLen = snprintf(
+      Summary, sizeof(Summary),
+      "\n%llu of files.\n%llu of folders.\n%.2f %s Used.\n%.2f %s Free.\n",
+      FileCount, FolderCount, UsedVal, Units[UIdx], FreeVal, Units[FIdx]);
   OutBufAppend(&Ob, Summary, (size_t)SLen);
 
   OutBufFlushToNarrowStdout(&Ob);
@@ -329,12 +333,14 @@ int FindWindowsContents(const char *DirName, LstOptions *Opts) {
     int N;
     if (Entries[i].IsDir) {
       FolderCount++;
-      N = UseColor ? _snwprintf(Line, PATH_MAX + 32, L"\033[33m%s\n\033[0m", Entries[i].Name)
-                    : _snwprintf(Line, PATH_MAX + 32, L"%s\n", Entries[i].Name);
+      N = UseColor ? _snwprintf(Line, PATH_MAX + 32, L"\033[33m%s\n\033[0m",
+                                Entries[i].Name)
+                   : _snwprintf(Line, PATH_MAX + 32, L"%s\n", Entries[i].Name);
     } else {
       FileCount++;
-      N = UseColor ? _snwprintf(Line, PATH_MAX + 32, L"\033[36m%s\n\033[0m", Entries[i].Name)
-                    : _snwprintf(Line, PATH_MAX + 32, L"%s\n", Entries[i].Name);
+      N = UseColor ? _snwprintf(Line, PATH_MAX + 32, L"\033[36m%s\n\033[0m",
+                                Entries[i].Name)
+                   : _snwprintf(Line, PATH_MAX + 32, L"%s\n", Entries[i].Name);
     }
     OutBufAppend(&Ob, Line, (size_t)N);
   }
@@ -342,7 +348,8 @@ int FindWindowsContents(const char *DirName, LstOptions *Opts) {
   ULARGE_INTEGER FreeBytesAvail, TotalBytes, TotalFreeBytes;
   unsigned long long UsedBytes = 0;
   TotalFreeBytes.QuadPart = 0;
-  if (GetDiskFreeSpaceExW(SzFullPath, &FreeBytesAvail, &TotalBytes, &TotalFreeBytes)) {
+  if (GetDiskFreeSpaceExW(SzFullPath, &FreeBytesAvail, &TotalBytes,
+                          &TotalFreeBytes)) {
     UsedBytes = TotalBytes.QuadPart - TotalFreeBytes.QuadPart;
   }
 
@@ -362,9 +369,10 @@ int FindWindowsContents(const char *DirName, LstOptions *Opts) {
   }
 
   wchar_t Summary[512];
-  int SLen = _snwprintf(Summary, 512,
-                         L"\n%llu of files.\n%llu of folders.\n%.2f %s Used.\n%.2f %s Free.\n",
-                         FileCount, FolderCount, UsedVal, Units[UIdx], FreeVal, Units[FIdx]);
+  int SLen = _snwprintf(
+      Summary, 512,
+      L"\n%llu of files.\n%llu of folders.\n%.2f %s Used.\n%.2f %s Free.\n",
+      FileCount, FolderCount, UsedVal, Units[UIdx], FreeVal, Units[FIdx]);
   OutBufAppend(&Ob, Summary, (size_t)SLen);
 
   /* Wide-mode flush: only this function's output path needs UTF-16 stdout,
@@ -420,7 +428,7 @@ int main(int argc, char *argv[]) {
   if (GetConsoleMode(HOut, &DwMode)) {
     SetConsoleMode(HOut, DwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
   }
-  /* stdout stays narrow (_O_TEXT) by default here — --help/--version use it
+  /* stdout stays narrow (_O_TEXT) by default here: --help/--version use it
      directly. FindWindowsContents switches to _O_U16TEXT itself, only around
      its own wide flush, then switches back. */
 #endif
