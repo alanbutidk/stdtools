@@ -1,13 +1,25 @@
 # Standard Tools (stdTools)
 **stdTools** or **Standard Tools** is a collection of tools written mostly in python.
 
-Tools like PCC or PyCacheCleaner.
+These tools are either:
 
-Tools like StubExec, To Stub Executables.
+- Clones
+- Custom python written tools
+- Custom C written tools
+- Custom shell fun.
 
-And tools like token generators or directory cleaners.
+> NOTE: The exec program IS VERY W.I.P, like not even flag parsing is added yet and linker errors persist.
 
-And clones written in C like lst, which colorfully lists the contents in a directory. 
+---
 
-> Building StubExec requires a C Compiler (recommend: GCC) to work.
+There is a super complicated build-script avaliable to only the C directory in this repo.
+
+The usage for the latter is:
+```bash
+python build.py help # Or 'h'
+python build.py version # or 'v'
+python build.py all # build everything
+python build.py ebuild # build exec
+python build.py tbuild # build timestamp
+```
 
