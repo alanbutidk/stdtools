@@ -1,10 +1,19 @@
 /* exec -> Execute a program
  * Copyright (c) 2026 Alan. All Rights Reserved.
+ * NOTE: This program uses the DLL/SO version of Python, causing it to NOT
+ * recognize its std libs. We advise you THAT either: You place a embed python
+ * installation's python313.zip and _pth file. OR YOU: Set your installation's
+ * PYTHONHOME variable for Python to work.
  */
 
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
+#include "functions.h"
 #include "os.h"
+
+// Macro to include shellapi.h
+
+#define NEED_WINSHELL
 
 // This part of the file is completly dedicated to Python.
 
@@ -102,6 +111,15 @@ int _luaexec_runfile(int argc, char *argv[], const char *Filename) {
 
 // End of Lua runners.
 
+// Start of Bat runner
+int _batexec_runfile(int argc, char *argv[], const char *Filename) {
+  HINSTANCE Result = ShellExecute(
+    NULL,
+  ); //TODO: Finish the batexec runner and test it.
+  return 0;
+}
+// End of Bat runner
+
 // Internal function to determine the suffix is same.
 bool _HasSuffix(const char *str, const char *suffix) {
   if (!str || !suffix)
@@ -115,30 +133,69 @@ bool _HasSuffix(const char *str, const char *suffix) {
 }
 
 int main(int argc, char *argv[]) {
+#if defined(OS_IS) && OS_IS == WINDOWS
+  EnableVT100();
+  int _IsBatRunnable = 1;
+  int _IsPs1Runnable = 1;
+#else
+  int _IsShRunnable = 1;
+#endif
+
   int _PySuffix = 0;
   int _LuaSuffix = 0;
+  int _ShSuffix = 0;
+  int _BatSuffix = 0;
+  int _Ps1Suffix = 0;
+
   if (argc == 1) {
     printf("\033[31mNo arguments given! Use --help/-h for usage.\n\033[0m");
     return 1;
   }
   char *Arg = argv[1];
+  if (strcmp(Arg, "--help") == 0 || strcmp(Arg, "-h") == 0) {
+    printf("\033[33mexec %s called\n"
+           "--help/-h: Print help and exit\n"
+           "--version/-v: Print version and exit.\n"
+           "\nUsage: exec <FILE>\n\033[0m",
+           Arg);
+    return 0;
+  } else if (strcmp(Arg, "--version") == 0 || strcmp(Arg, "-v") == 0) {
+    printf(
+        "\033[33mexec - stdTools v1.0.0\n"
+        "Copyright (C) 2026 Alan\n"
+        "License GPLv3: GNU GPL version 3 or later <https://gnu.org>\n"
+        "This is free software: you are free to change and redistribute it.\n"
+        "There is NO WARRANTY, to the extent permitted by law.\n\033[0m");
+    return 0;
+  } else {
+  }
 
   if (_HasSuffix(Arg, ".py")) {
-    int _PySuffix = 1;
+    _PySuffix = 1;
   } else if (_HasSuffix(Arg, ".lua")) {
-    int _LuaSuffix = 1;
+    _LuaSuffix = 1;
+  } else if (_HasSuffix(Arg, ".sh")) {
+    _ShSuffix = 1;
+  } else if (_HasSuffix(Arg, ".bat")) {
+    _BatSuffix = 1;
+  } else if (_HasSuffix(Arg, ".ps1")) {
+    _Ps1Suffix = 1;
   } else {
-    return 1;
+    return EXIT_FAILURE;
   }
+
   if (_PySuffix == 1) {
     _pyexec_runfile(argc, argv, Arg);
     return 0;
   } else if (_LuaSuffix == 1) {
     _luaexec_runfile(argc, argv, Arg);
     return 0;
-  } else {
-    return EXIT_FAILURE;
+  } else if (_BatSuffix == 1 && _IsBatRunnable == 1) {
+    return 0;
+  } else if (_Ps1Suffix == 1 && _IsPs1Runnable == 1) {
+    return 0;
+  } else if (_ShSuffix == 1 && _IsShRunnable == 1) {
+    return 0;
   }
-
   return 0;
 }

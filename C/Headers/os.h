@@ -11,6 +11,10 @@
 #include <io.h>
 #include <tlhelp32.h>
 
+#if defined(NEED_WINSHELL)
+#include <shellapi.h>
+#endif
+
 // Check if INCLUDE_SYSHEADERS is there and include the following headers:
 #ifdef INCLUDE_SYSHEADERS
 #include <signal.h>

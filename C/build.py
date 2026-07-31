@@ -73,7 +73,7 @@ if argv[1] == "version" or argv[1] == "v":
 Arg = argv[1]
 
 
-def _ebuild() -> None | str:
+def _ebuildFlag() -> None | str:
     PyInclude = get_path("include")
     if platform == "win32":
         CCFlags = f"-IHeaders -ILuaJITHeaders -I{str(__import__('pathlib').Path(PyInclude).resolve()).replace('\\', '/')} -L. -lpython313 -llibluajit5.1 -mconsole"
@@ -82,7 +82,7 @@ def _ebuild() -> None | str:
     return CCFlags
 
 
-def _tbuild() -> None | str:
+def _tbuildFlag() -> None | str:
     if platform == "win32":
         CCFlags = "-IHeaders -mconsole"
     else:
@@ -95,8 +95,8 @@ class Build:
         pass
 
     def Core(self, BuildT: bool = False, BuildE: bool = False) -> Any | Any:
-        self.CCFlagE = _ebuild()
-        self.CCFlagT = _tbuild()
+        self.CCFlagE = _ebuildFlag()
+        self.CCFlagT = _tbuildFlag()
         self.CC = environ.get("CC", "gcc")
         self.TCMD = f"{self.CC} -o timestamp{EXE} timestamp.c {self.CCFlagT}"
         self.ECMD = f"{self.CC} -o exec{EXE} exec.c {self.CCFlagE}"
@@ -110,6 +110,9 @@ class Build:
                 return None
         if BuildE:
             RUN2 = s.run(self.ECMD, shell=True, capture_output=True, text=True)
+            print(
+                f"\033[33mNOTE: Python expects a Lib folder to work properly in its frozen/embed form (or even a executable form).\nSo, it will crash when you work with exec. To avoid this for future: \n(1) Set your PYTHONHOME to: {get_config_var('base').replace('\\', '/')}.\n(2) Run exec with the python file you wish (as it will work now.)\n\033[0m"
+            )
             if RUN2.returncode != 0:
                 print(
                     f"\033[31mError while compiling: exec.c, errno: {RUN2.returncode}, Error output: {RUN2.stderr}\033[0m"
@@ -119,11 +122,11 @@ class Build:
         return None
 
     def EBuild(self) -> Self | None:
-        self.Core(BuildT=True)
+        self.Core(BuildE=True)
         return None
 
     def TBuild(self) -> Self | None:
-        self.Core(BuildE=True)
+        self.Core(BuildT=True)
 
     def All(self) -> Self | None:
         self.Core(BuildT=True, BuildE=True)

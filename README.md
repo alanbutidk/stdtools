@@ -8,8 +8,6 @@ These tools are either:
 - Custom C written tools
 - Custom shell fun.
 
-> NOTE: The exec program IS VERY W.I.P, like not even flag parsing is added yet and linker errors persist.
-
 ---
 
 There is a super complicated build-script avaliable to only the C directory in this repo.
