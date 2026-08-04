@@ -19,28 +19,9 @@ def PassGen(k: int) -> int | str:
     return FirstChar + PassPart2
 
 
-cli = ArgHandle()
+cli = ArgHandle("passgen", "v1.0.0")
 cli.PrintOnNoArgs("No arguments given, use --help/-h for usage.")
-cli.ProgramName("passgen")
 cli.RegisterArg(["--version", "-v"], HelpMsg="Print version & exit")
 cli.RegisterArg(["--write-to-file", "-wtf"], HelpMsg="Write to file or wtf.")
 cli.RegisterArg(["--pass-len", "-pl"], HelpMsg="Password length (def: 8)")
-cli.HandleHelp()
-
-WhereWTF = cli.NextAfter("--write-to-file") or cli.NextAfter("-wtf")
-WhereK = cli.NextAfter("--pass-len") or cli.NextAfter("-pl")
-
-if isinstance(WhereK, NotFoundInArgs) and isinstance(WhereWTF, NotFoundInArgs):
-    passw = PassGen(8)
-    print(passw)
-elif isinstance(WhereK, NotFoundInArgs) and not isinstance(WhereWTF, NotFoundInArgs):
-    passw = PassGen(8)
-    WriteToFile(passw, WhereWTF)
-    print(passw)
-elif not isinstance(WhereK, NotFoundInArgs) and isinstance(WhereWTF, NotFoundInArgs):
-    passw = PassGen(int(WhereK))
-    print(passw)
-else:
-    passw = PassGen(int(WhereK))
-    WriteToFile(passw, WhereWTF)
-    print(passw)
+cli.HandleBasic()

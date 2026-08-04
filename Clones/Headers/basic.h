@@ -1,8 +1,8 @@
 #if defined(_WIN32) || defined(_WIN64)
-#define OS_IS WINDOWS
+#define OS_IS 1
 #elif defined(__linux__) || defined(__APPLE__) || defined(__MACH__) ||         \
     defined(__unix__) || defined(__unix)
-#define OS_IS LINUX_UNIX
+#define OS_IS 2
 #else
-return 1;
+#define OS_IS 3
 #endif
