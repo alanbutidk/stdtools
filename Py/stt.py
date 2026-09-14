@@ -10,6 +10,8 @@ The word space will be replaced by Tab when t->s mode
 
 """Copyright (c) 2026 Alan. All Rights Reserved."""
 
+# ruff: noqa: E402
+
 from arghandle import (
     ArgHandle,
     IndexOutOfRange,
@@ -57,7 +59,7 @@ def SpaceToTab(filename, SpacePerTab=4):
         print(f"No space found in file {filename}")
         return
     TempPath.replace(path)
-    print(f"Finished conversion!")
+    print("Finished conversion!")
 
 
 # t->s
@@ -90,25 +92,20 @@ def TabToSpace(filepath, SpacePerTab=4):
         print(f"No tab found in file {filepath}")
         return
     TempPath.replace(path)
-    print(f"Finished conversion!")
+    print("Finished conversion!")
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------------
 # Argument handling
-cli = ArgHandle()
-cli.PrintOnNoArgs("No Arguments given! use -h or --help for help", Exit=True)
-cli.ProgramName("SpaceToTab")
+cli = ArgHandle("SpaceToTab", "v1.1.0")
+cli.PrintOnNoArgs("No Arguments given! use -h or --help for help")
 cli.RegisterArg(["ts", "-ts"], HelpMsg="Converts tab to space")
 cli.RegisterArg(["st", "-st"], HelpMsg="Convert space to tab")
-cli.RegisterArg(
-    ["--version", "-v"],
-    HelpMsg="Prints version info",
-)
-cli.HandleHelp()
+cli.HandleBasic()
 
-if cli.IsArgInActualArgs("-v") or cli.IsArgInActualArgs("--version"):
-    raise SystemExit(Version)
-else:
+# WE DO NOT WANT TO CHANGE THE THINGS USED HERE. ONLY UPDATE THE VERSION PARAMS!
+
+if cli.ArgCount() < 2:
     file = cli.SetVariableToIndex("File", 2)
 
     if isinstance(file, IndexOutOfRange):
@@ -121,4 +118,4 @@ else:
         SpaceToTab(file, SpacePerTab=4)
 
     else:
-        raise SystemExit("Unknown argument! Use -h or --help to get usage!")
+        cli.ErrorArgPrint("Unknown argument found! Use --help/-h for usage!")

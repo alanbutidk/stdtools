@@ -6,7 +6,6 @@
 
 int ClearScreen() {
 #if OS_IS == 1
-#define WIN32_LEAN_AND_MEAN
 
   HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
   CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -47,7 +46,7 @@ int main(int argc, char *argv[]) {
   } else if (strcmp("--version", Arg) == 0 || strcmp("-v", Arg) == 0) {
     printf(
         "\033[33msfresh (v2.0.0) - stdTools v1.0.0\n"
-        "Copyright (C) 2026 Free Software Foundation, Inc.\n"
+        "Copyright (C) 2026 Alan.\n"
         "License GPLv3+: GNU GPL version 3 or later <https://gnu.org>.\n"
         "This is free software: you are free to change and redistribute it.\n"
         "There is NO WARRANTY, to the extent permitted by law.\033[0m\n");

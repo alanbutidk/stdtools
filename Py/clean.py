@@ -1,78 +1,59 @@
-import os
-import sys
 import shutil
 import fnmatch
+import sys
 from pathlib import Path
+from arghandle import ArgHandle
 
-os.system("")  # Enable ANSI on Windows
+cli = ArgHandle("clean", "v2.0.0")
 
-if len(sys.argv) < 2:
-    print("\x1b[31mArguments not given!\033[0m\nUsage: clean <--command(s)>")
-    sys.exit(1)
+cli.RegisterArg(
+    ["-e", "--except"],
+    Type=str,
+    HelpMsg='Delete everything in a folder except the given pattern, e.g. --except "*.py"',
+)
+cli.RegisterArg(
+    ["--force", "-f"],
+    Type=bool,
+    HelpMsg="Forcefully delete a folder without confirmation",
+)
 
-args = sys.argv[1:]
 
-if any(arg.lower() in ("--help", "-h") for arg in args):
-    print(
-        "clean --help/-h called, cmds:"
-        "\n<DirName>: Just the dir name, no flags..."
-        "\n<MultiDirs>: like these: dirname1 dirname2... to delete all of them given as options"
-        "\n--force: Forcefully delete a folder, like this: clean MyDir1 --force"
-        '\n--except: Deletes everything in a folder except the argument given, like this: clean MyDir1 --except "*.py"'
-        "\n--version: Print version and exit."
-    )
-    sys.exit(0)
+cli.PrintOnNoArgs("No arguments provided! Call --help/-h for usage.")
+cli.HandleBasic()
 
-if any(arg.lower() in ("--version", "-v") for arg in args):
-    print("""
-Clean - stdtools v1.0.0
-Copyright (C) 2026 Alan
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.
-    """)
-    sys.exit(0)
-
-# Argument parsing
 dirlist = []
-flags = {}
-i = 0
-while i < len(args):
-    arg = args[i]
-    if arg == "--except":
-        if i + 1 >= len(args):
-            print(
-                "\x1b[31m--except requires a pattern argument, e.g. --except *.py\033[0m"
-            )
-            sys.exit(1)
-        flags["except"] = args[i + 1]
-        i += 2
-    elif arg == "--force":
-        flags["force"] = True
-        i += 1
-    elif arg == "--version":
-        flags["version"] = True
-        i + 1
-    elif arg.startswith("--"):
-        print(f"\x1b[31mUnknown flag: {arg}\033[0m")
+skip_next = False
+for i, arg in enumerate(sys.argv[1:], start=1):
+    if skip_next:
+        skip_next = False
+        continue
+    if arg in ("--except", "-e"):
+        skip_next = True
+        continue
+    if arg in ("--force", "-f"):
+        continue
+    if arg.startswith("-"):
+        cli.ErrorArgPrint(f"Unknown flag: {arg}", Exit=False)
         sys.exit(1)
-    else:
-        dirlist.append(arg)
-        i += 1
+    dirlist.append(arg)
 
 if not dirlist:
-    print("\x1b[31mNo directories given!\033[0m")
+    cli.ErrorArgPrint("No directories given!", Exit=False)
     sys.exit(1)
 
-# Feature logics
-
 # --except: delete everything in dir(s) except files matching the pattern
-if "except" in flags:
-    pattern = flags["except"]
+if cli.e:
+    if cli.e.value is None:
+        cli.ErrorArgPrint(
+            "--except requires a pattern argument, e.g. --except *.py", Exit=False
+        )
+        sys.exit(1)
+
+    pattern = cli.e.value
     for d in dirlist:
         path = Path(d)
         if not path.exists() or not path.is_dir():
-            print(f"\x1b[31mDirectory not found: {d}\033[0m")
+            cli.ErrorArgPrint(f"Directory not found: {d}", Exit=False)
             continue
         deleted = 0
         for item in path.iterdir():
@@ -84,15 +65,15 @@ if "except" in flags:
                 deleted += 1
         print(f"Cleaned '{d}' ({deleted} items removed), kept: {pattern}")
 
-elif "force" in flags:
+elif cli.force.value:
     for d in dirlist:
         try:
             shutil.rmtree(d)
             print(f"Force deleted: {d}")
         except FileNotFoundError:
-            print(f"\x1b[31mNot found: {d}\033[0m")
+            cli.ErrorArgPrint(f"Not found: {d}", Exit=False)
         except Exception as e:
-            print(f"\x1b[31mFailed to delete {d}: {e}\033[0m")
+            cli.ErrorArgPrint(f"Failed to delete {d}: {e}", Exit=False)
 
 else:
     for d in dirlist:
@@ -101,5 +82,4 @@ else:
             shutil.rmtree(path)
             print(f"Deleted: {d}")
         else:
-            print(f"\x1b[31mDirectory not found: {d}\033[0m")
-
+            cli.ErrorArgPrint(f"Directory not found: {d}", Exit=False)

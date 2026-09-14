@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-tpath - Run the Nth occurrence of a command found in PATH.
+npath: Run the Nth occurrence of a command found in PATH.
 
 CLI usage:
-    tpath <cmd> [cmd args...]           # run the 2nd instance (default)
-    tpath -i <N> <cmd> [cmd args...]    # run the Nth instance
-    tpath --help / -h                   # show help
+    npath <cmd> [cmd args...]           # run the 2nd instance (default)
+    npath -i <N> <cmd> [cmd args...]    # run the Nth instance
+    npath --help / -h                   # show help
 
 API usage:
-    from tpath import FindInstance, RunInstance, TPath
+    from npath import FindInstance, RunInstance, NPath
 
     fi = FindInstance("python3")
     fi.all()
@@ -22,10 +22,10 @@ API usage:
     result = ri.capture("python3", ["-c", "print(1)"])
     result.stdout
 
-    TPath.run("python3", nth=2)
-    TPath.spawn("python3", ["--version"], nth=2)
-    TPath.find("python3")
-    TPath.list("python3")
+    NPath.run("python3", nth=2)
+    NPath.spawn("python3", ["--version"], nth=2)
+    NPath.find("python3")
+    NPath.list("python3")
 """
 
 from __future__ import annotations
@@ -198,15 +198,15 @@ class RunInstance:
         return f"RunInstance(nth={self.nth})"
 
 
-class TPath:
+class NPath:
     """
     High-level facade over FindInstance and RunInstance.
 
     Example:
-        TPath.run("python3", nth=2)
-        TPath.spawn("python3", ["--version"], nth=1)
-        TPath.list("python3")
-        TPath.find("python3").nth(2)
+        NPath.run("python3", nth=2)
+        NPath.spawn("python3", ["--version"], nth=1)
+        NPath.list("python3")
+        NPath.find("python3").nth(2)
     """
 
     @classmethod
@@ -239,44 +239,33 @@ class TPath:
 
 
 def _parse_cli() -> tuple[int, str, list[str]]:
-    cli = ArgHandle()
-    cli.ProgramName("tpath")
-    cli.RegisterArg(
-        ["--version", "-v"],
-        HelpMsg="Print version",
-    )
+    cli = ArgHandle("npath", "v1.1.1")
+    cli.PrintOnNoArgs("No arguments given! Use --help/-h for usage.")
     cli.RegisterArg(
         ["-i", "--index"],
-        StrictIndex=1,
-        StrictIndex_ExitOnError=True,
-        VarIndex=2,
         HelpMsg="Which occurrence to run (1-based). Usage: -i <N> <cmd> [args...]",
     )
-    cli.PrintOnNoArgs("No command given! Use -h or --help for usage.", Exit=True)
-    cli.HandleHelp()
-
-    if cli.IsArgInActualArgs("--version") or cli.IsArgInActualArgs("-v"):
-        print("""
-TPath - stdTools 1.0.0
+    cli.CustomVersionMsg("""
+NPath - stdTools 1.0.0
 Copyright (C) 2026 Alan
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org>
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org>
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 
-        """)
-        raise SystemExit
+    """)
+    cli.HandleBasic()
 
     if sys.argv[1] in ("-i", "--index"):
-        if isinstance(cli.i, NoVarIndex):
-            sys.exit("error: -i requires an integer argument\n")
+        if isinstance(cli.i, NoVarIndex):  # pyright: ignore
+            cli.ErrorArgPrint("Error: -i requires an integer argument\n")
         try:
-            nth = int(cli.i)
+            nth = int(cli.i.value)  # pyright: ignore
         except ValueError:
-            sys.exit(f"error: '{cli.i}' is not a valid integer for -i\n")
+            cli.ErrorArgPrint(f"Error: '{cli.i.value}' is not a valid integer for -i\n")  # pyright: ignore
         if nth < 1:
-            sys.exit("error: -i must be >= 1\n")
+            cli.ErrorArgPrint("Error: -i must be >= 1\n")
         if len(sys.argv) < 4:
-            sys.exit("error: no command specified after -i <N>\n")
+            cli.ErrorArgPrint("Error: no command specified after -i <N>\n")
 
         cmd, cmd_args = sys.argv[3], sys.argv[4:]
     else:
@@ -288,11 +277,11 @@ There is NO WARRANTY, to the extent permitted by law.
 def main():
     nth, cmd, cmd_args = _parse_cli()
     try:
-        print(
-            f"[tpath] running occurrence #{nth} of '{cmd}': {TPath.resolve(cmd, nth)}",
-            file=sys.stderr,
-        )
-        TPath.run(cmd, cmd_args, nth=nth)
+        # print(
+        # f"#{nth} of '{cmd}': {TPath.resolve(cmd, nth)}",
+        # file=sys.stderr,
+        # )
+        NPath.run(cmd, cmd_args, nth=nth)
     except (CommandNotFound, InstanceNotFound) as exc:
         sys.exit(f"error: {exc}\n")
 

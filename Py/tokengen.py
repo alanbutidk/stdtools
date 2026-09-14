@@ -34,30 +34,25 @@ def GenToken(
 
 
 if __name__ == "__main__":
-    cli = ArgHandle()
-    cli.ProgramName("TokenGen")
-    cli.RegisterArg(
-        ["--version", "-v"],
-        HelpMsg="Print version & exit",
-    )
+    cli = ArgHandle("tokengen", "v1.1.0")
     cli.RegisterArg(
         ["--writetofile", "-wtf"],
-        HelpMsg="Yes, it is -wtf. Write-To-File.",
+        HelpMsg="Write the token to file (takes name after flag)",
     )
     cli.RegisterArg(
         ["-a", "--appname"],
         HelpMsg="AppName for token. If none then only token without name.",
     )
-    cli.HandleHelp()
-    if cli.IsArgInActualArgs("--version") or cli.IsArgInActualArgs("-v"):
-        print("""
-TokenGen - stdtools v1.0.0
+    cli.CustomVersionMsg("""
+TokenGen v1.1.0 (stdtools v1.2.0)
 Copyright (C) 2026 Alan
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
-		""")
-        raise SystemExit
+	""")
+
+    cli.HandleBasic()
+
     AppName = cli.NextAfter("-a") or cli.NextAfter("--appname")
     if isinstance(AppName, NotFoundInArgs):
         print("No appname provided.")
